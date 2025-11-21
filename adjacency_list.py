@@ -177,7 +177,6 @@ def bfs(graph: dict, start: str):
     return visited
 
 def bfs_shortest_path(graph: dict, start: str, dest: str):
-   
     if start not in graph or dest not in graph:
         return []
     
@@ -209,6 +208,79 @@ def bfs_shortest_path(graph: dict, start: str, dest: str):
                 fila.append({"vertice": neighbor, "caminho": novo_caminho})
     
     return []
+
+def dfs(graph: dict, start: str):
+    if start not in graph:
+        return []
+    
+    pilha = [{"vertice": start, "pai": None}]
+    
+    visited = []
+    
+    while len(pilha) != 0:
+        item = pilha.pop()
+        vertice_atual = item["vertice"]
+        
+        if vertice_atual in visited:
+            continue
+        
+        visited.append(vertice_atual)
+        
+        neighbors = graph[vertice_atual]
+        
+        for neighbor in neighbors:
+            neighbor_in_pilha = False
+            for item in pilha:
+                if item["vertice"] == neighbor:
+                    neighbor_in_pilha = True
+                    break
+            
+            if neighbor not in visited and not neighbor_in_pilha:
+                pilha.append({"vertice": neighbor, "pai": vertice_atual})
+    
+    return visited
+
+def detect_cycle_dfs(graph: dict, start: str = None):
+    if not graph:
+        return False, []
+    
+    if start is None:
+        start = list(graph.keys())[0]
+    
+    if start not in graph:
+        return False, []
+    
+    pilha = [{"vertice": start, "pai": None}]
+    
+    visited = []
+    
+    while len(pilha) != 0:
+        item = pilha.pop()
+        vertice_atual = item["vertice"]
+        pai_atual = item["pai"]
+        
+        if vertice_atual in visited:
+            continue
+        
+        visited.append(vertice_atual)
+        
+        neighbors = graph[vertice_atual]
+        
+        for neighbor in neighbors:
+            neighbor_in_pilha = False
+            for item in pilha:
+                if item["vertice"] == neighbor:
+                    neighbor_in_pilha = True
+                    break
+            
+            if neighbor not in visited and not neighbor_in_pilha:
+                pilha.append({"vertice": neighbor, "pai": vertice_atual})
+            else:
+                if neighbor != pai_atual and neighbor in visited:
+                    ciclo = visited[visited.index(neighbor):] + [neighbor]
+                    return True, ciclo
+    
+    return False, []
 
 def display_all_degrees(graph: dict, targeted: bool = False):
     """
@@ -324,13 +396,56 @@ def main():
     print(f"    Ordem de visitação: {', '.join(result)}")
     
     print("\n11. Busca do Menor Caminho usando BFS:")
-    print("\n    Encontrando o menor caminho de 'B' até 'C':")
+    print("    Encontrando o menor caminho de 'B' até 'C':")
     shortest = bfs_shortest_path(test_graph, "B", "C")
     if shortest:
         print(f"    Caminho encontrado: {' -> '.join(shortest)}")
         print(f"    Distância: {len(shortest) - 1} arestas")
     else:
         print("    Nenhum caminho encontrado!")
+    
+    print("\n12. Busca em Profundidade (DFS):")
+    print("    Grafo para teste:")
+    display_graph(test_graph)
+    
+    print("    DFS a partir de 'A':")
+    result_dfs = dfs(test_graph, "A")
+    print(f"    Ordem de visitação: {', '.join(result_dfs)}")
+    
+    
+    print("\n13. Detecção de Ciclos usando DFS:")
+    
+
+    print("    Grafo sem ciclo:")
+    tree_graph = create_graph()
+    add_edge(tree_graph, "A", "B")
+    add_edge(tree_graph, "A", "C")
+    add_edge(tree_graph, "B", "D")
+    add_edge(tree_graph, "C", "E")
+    display_graph(tree_graph)
+    
+    has_cycle, cycle_path = detect_cycle_dfs(tree_graph, "A")
+    if has_cycle:
+        print(f"   Ciclo: {' -> '.join(cycle_path)}")
+    else:
+        print("    Nenhum ciclo")
+    
+
+    print("\n    Grafo com ciclo:")
+    cycle_graph = create_graph()
+    add_edge(cycle_graph, "A", "B")
+    add_edge(cycle_graph, "B", "C")
+    add_edge(cycle_graph, "C", "D")
+    add_edge(cycle_graph, "D", "A")
+    add_edge(cycle_graph, "B", "D")
+    display_graph(cycle_graph)
+    
+    has_cycle, cycle_path = detect_cycle_dfs(cycle_graph, "A")
+    if has_cycle:
+        print(f"    Ciclo: {' -> '.join(cycle_path)}")
+    else:
+        print("    Nenhum ciclo")
+    
 
     
 if __name__ == "__main__":
